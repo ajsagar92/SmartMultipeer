@@ -1,0 +1,11 @@
+use_frameworks!
+
+target 'SmartMultipeer_Example' do
+  pod 'SmartMultipeer', :path => '../'
+
+  target 'SmartMultipeer_Tests' do
+    inherit! :search_paths
+
+    
+  end
+end

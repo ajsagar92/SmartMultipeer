@@ -1,0 +1,6 @@
+framework module SmartMultipeer {
+  umbrella header "SmartMultipeer-umbrella.h"
+
+  export *
+  module * { export * }
+}

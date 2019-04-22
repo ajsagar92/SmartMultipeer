@@ -1,0 +1,16 @@
+PODS:
+  - SmartMultipeer (0.1.0)
+
+DEPENDENCIES:
+  - SmartMultipeer (from `../`)
+
+EXTERNAL SOURCES:
+  SmartMultipeer:
+    :path: "../"
+
+SPEC CHECKSUMS:
+  SmartMultipeer: 12c523b683bf93939c6283f982703d2edab9f6f3
+
+PODFILE CHECKSUM: 7ea3352152f68a6d57c46674ca90f5d312f850a0
+
+COCOAPODS: 1.6.1

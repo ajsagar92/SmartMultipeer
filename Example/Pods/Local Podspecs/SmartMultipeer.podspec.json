@@ -1,0 +1,22 @@
+{
+  "name": "SmartMultipeer",
+  "version": "0.1.0",
+  "summary": "A short description of SmartMultipeer.",
+  "description": "TODO: Add long description of the pod here.",
+  "homepage": "https://github.com/a.sagar@wizsoft.pk/SmartMultipeer",
+  "license": {
+    "type": "MIT",
+    "file": "LICENSE"
+  },
+  "authors": {
+    "a.sagar@wizsoft.pk": "ajay.sagar92@gmail.com"
+  },
+  "source": {
+    "git": "https://github.com/a.sagar@wizsoft.pk/SmartMultipeer.git",
+    "tag": "0.1.0"
+  },
+  "platforms": {
+    "ios": "8.0"
+  },
+  "source_files": "SmartMultipeer/Classes/**/*"
+}
