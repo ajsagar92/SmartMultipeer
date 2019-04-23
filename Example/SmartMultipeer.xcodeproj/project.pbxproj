@@ -7,6 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2D4BE4F0226ED07000396064 /* order.json in Resources */ = {isa = PBXBuildFile; fileRef = 2D4BE4EA226ED07000396064 /* order.json */; };
+		2D4BE4F1226ED07000396064 /* OrderToPost.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D4BE4EB226ED07000396064 /* OrderToPost.swift */; };
+		2D4BE4F2226ED07000396064 /* TemplateOrderToPost.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D4BE4EC226ED07000396064 /* TemplateOrderToPost.swift */; };
+		2D4BE4F3226ED07000396064 /* DeviceTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D4BE4ED226ED07000396064 /* DeviceTableViewCell.swift */; };
+		2D4BE4F4226ED07000396064 /* DeviceTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D4BE4EE226ED07000396064 /* DeviceTableViewController.swift */; };
+		2D4BE4F5226ED07000396064 /* CustomObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D4BE4EF226ED07000396064 /* CustomObject.swift */; };
 		607FACD61AFB9204008FA782 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607FACD51AFB9204008FA782 /* AppDelegate.swift */; };
 		607FACD81AFB9204008FA782 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607FACD71AFB9204008FA782 /* ViewController.swift */; };
 		607FACDB1AFB9204008FA782 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 607FACD91AFB9204008FA782 /* Main.storyboard */; };
@@ -29,6 +35,12 @@
 
 /* Begin PBXFileReference section */
 		24C6B3ED8C46E69221C7E726 /* LICENSE */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = LICENSE; path = ../LICENSE; sourceTree = "<group>"; };
+		2D4BE4EA226ED07000396064 /* order.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = order.json; sourceTree = "<group>"; };
+		2D4BE4EB226ED07000396064 /* OrderToPost.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OrderToPost.swift; sourceTree = "<group>"; };
+		2D4BE4EC226ED07000396064 /* TemplateOrderToPost.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TemplateOrderToPost.swift; sourceTree = "<group>"; };
+		2D4BE4ED226ED07000396064 /* DeviceTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeviceTableViewCell.swift; sourceTree = "<group>"; };
+		2D4BE4EE226ED07000396064 /* DeviceTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeviceTableViewController.swift; sourceTree = "<group>"; };
+		2D4BE4EF226ED07000396064 /* CustomObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomObject.swift; sourceTree = "<group>"; };
 		3A28773C688C855B7C25DEBF /* Pods-SmartMultipeer_Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SmartMultipeer_Example.release.xcconfig"; path = "Target Support Files/Pods-SmartMultipeer_Example/Pods-SmartMultipeer_Example.release.xcconfig"; sourceTree = "<group>"; };
 		44BC5BBD4ABA2023458A2FC3 /* Pods_SmartMultipeer_Tests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_SmartMultipeer_Tests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		607FACD01AFB9204008FA782 /* SmartMultipeer_Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SmartMultipeer_Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -102,6 +114,12 @@
 		607FACD21AFB9204008FA782 /* Example for SmartMultipeer */ = {
 			isa = PBXGroup;
 			children = (
+				2D4BE4EF226ED07000396064 /* CustomObject.swift */,
+				2D4BE4ED226ED07000396064 /* DeviceTableViewCell.swift */,
+				2D4BE4EE226ED07000396064 /* DeviceTableViewController.swift */,
+				2D4BE4EA226ED07000396064 /* order.json */,
+				2D4BE4EB226ED07000396064 /* OrderToPost.swift */,
+				2D4BE4EC226ED07000396064 /* TemplateOrderToPost.swift */,
 				607FACD51AFB9204008FA782 /* AppDelegate.swift */,
 				607FACD71AFB9204008FA782 /* ViewController.swift */,
 				607FACD91AFB9204008FA782 /* Main.storyboard */,
@@ -247,6 +265,7 @@
 			files = (
 				607FACDB1AFB9204008FA782 /* Main.storyboard in Resources */,
 				607FACE01AFB9204008FA782 /* LaunchScreen.xib in Resources */,
+				2D4BE4F0226ED07000396064 /* order.json in Resources */,
 				607FACDD1AFB9204008FA782 /* Images.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -314,12 +333,16 @@
 			);
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-SmartMultipeer_Example/Pods-SmartMultipeer_Example-frameworks.sh",
+				"${BUILT_PRODUCTS_DIR}/Realm/Realm.framework",
+				"${BUILT_PRODUCTS_DIR}/RealmSwift/RealmSwift.framework",
 				"${BUILT_PRODUCTS_DIR}/SmartMultipeer/SmartMultipeer.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 			);
 			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Realm.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RealmSwift.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SmartMultipeer.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -334,8 +357,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2D4BE4F3226ED07000396064 /* DeviceTableViewCell.swift in Sources */,
+				2D4BE4F5226ED07000396064 /* CustomObject.swift in Sources */,
+				2D4BE4F4226ED07000396064 /* DeviceTableViewController.swift in Sources */,
 				607FACD81AFB9204008FA782 /* ViewController.swift in Sources */,
+				2D4BE4F2226ED07000396064 /* TemplateOrderToPost.swift in Sources */,
 				607FACD61AFB9204008FA782 /* AppDelegate.swift in Sources */,
+				2D4BE4F1226ED07000396064 /* OrderToPost.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

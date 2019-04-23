@@ -1,15 +1,28 @@
 PODS:
-  - SmartMultipeer (0.1.0)
+  - Realm (3.14.1):
+    - Realm/Headers (= 3.14.1)
+  - Realm/Headers (3.14.1)
+  - RealmSwift (3.14.1):
+    - Realm (= 3.14.1)
+  - SmartMultipeer (0.1.0):
+    - RealmSwift
 
 DEPENDENCIES:
   - SmartMultipeer (from `../`)
+
+SPEC REPOS:
+  https://github.com/cocoapods/specs.git:
+    - Realm
+    - RealmSwift
 
 EXTERNAL SOURCES:
   SmartMultipeer:
     :path: "../"
 
 SPEC CHECKSUMS:
-  SmartMultipeer: 12c523b683bf93939c6283f982703d2edab9f6f3
+  Realm: e12c9c2387d05c5bba3a9c394838f5870e85763b
+  RealmSwift: a82eab9b04c3e1616082c7e17aa300740847769c
+  SmartMultipeer: 5c1a62236c1c1ac081c56ef453c4f404aaf69a73
 
 PODFILE CHECKSUM: 7ea3352152f68a6d57c46674ca90f5d312f850a0
 

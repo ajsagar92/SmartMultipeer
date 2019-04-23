@@ -1,22 +1,27 @@
 {
   "name": "SmartMultipeer",
   "version": "0.1.0",
-  "summary": "A short description of SmartMultipeer.",
-  "description": "TODO: Add long description of the pod here.",
+  "summary": "Multipeer Connectivity for iOS Devices with Acknowlegement",
+  "description": "Smart Multipeer Connectivity designed with acknowledgment facility that includes the time of delivery with the id of data sent. You can set primary id of your model which you want to sync",
   "homepage": "https://github.com/a.sagar@wizsoft.pk/SmartMultipeer",
   "license": {
     "type": "MIT",
     "file": "LICENSE"
   },
   "authors": {
-    "a.sagar@wizsoft.pk": "ajay.sagar92@gmail.com"
+    "ajay.sagar": "ajay.sagar92@gmail.com"
   },
   "source": {
-    "git": "https://github.com/a.sagar@wizsoft.pk/SmartMultipeer.git",
-    "tag": "0.1.0"
+    "git": "https://github.com/ajsagar92/SmartMultipeer.git",
+    "tag": "0.1"
   },
   "platforms": {
-    "ios": "8.0"
+    "ios": "9.3"
   },
-  "source_files": "SmartMultipeer/Classes/**/*"
+  "source_files": "SmartMultipeer/**/*.{swift}",
+  "dependencies": {
+    "RealmSwift": [
+
+    ]
+  }
 }

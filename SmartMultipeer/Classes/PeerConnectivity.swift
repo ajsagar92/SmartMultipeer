@@ -19,15 +19,8 @@ class PeerConnectivity: NSObject, PeerNearByConnectivity {
     //Advertising with No Invitation
     private var serviceAdvertiser: MCNearbyServiceAdvertiser?
     
-    //Advertising with Invitation
-    private var invitationServiceAdvertiser: MCAdvertiserAssistant?
-    
     //Browsing Peers
     private var serviceBrowser: MCNearbyServiceBrowser?
-    
-    //Listing Peers for Browsing
-    private var listServiceBrowserController: MCBrowserViewController?
-    private weak var browsingControllerDelegate: MCBrowserViewControllerDelegate?
     
     //Send / Receive Data Delegate
     weak var delegate: DataSyncDelegate?
@@ -59,7 +52,7 @@ class PeerConnectivity: NSObject, PeerNearByConnectivity {
         return connectedPeers.count > 0
     }
     //MARK: Setup Peer Connectivity
-    func setup(withInvitation: Bool = false, toListPeers: Bool = false, fromViewController: UIViewController, withDelegate: DataSyncDelegate) {
+    func setup(fromViewController: UIViewController, withDelegate: DataSyncDelegate) {
         guard service != "" else {
             let alertController = UIAlertController(title: "Setup Issue", message: "Error: Service Type", preferredStyle: .alert)
             let alertAction = UIAlertAction(title: "OK", style: .default, handler: nil)
@@ -67,54 +60,41 @@ class PeerConnectivity: NSObject, PeerNearByConnectivity {
             fromViewController.present(alertController, animated: true, completion: nil)
             return
         }
-        if withInvitation {
-            invitationServiceAdvertiser = MCAdvertiserAssistant(serviceType: service, discoveryInfo: nil, session: session)
-            invitationServiceAdvertiser?.delegate = self
-        }
-        else {
-            //Service Advertiser
-            serviceAdvertiser = MCNearbyServiceAdvertiser(peer: peer.deviceID, discoveryInfo: nil, serviceType: service)
+        
+        //Service Advertiser
+        serviceAdvertiser = MCNearbyServiceAdvertiser(peer: peer.deviceID, discoveryInfo: nil, serviceType: service)
             
-            serviceAdvertiser?.delegate = self
-        }
+        serviceAdvertiser?.delegate = self
         
         //Browser
-        if toListPeers {
-            listServiceBrowserController = MCBrowserViewController(serviceType: service, session: session)
-            listServiceBrowserController?.delegate = browsingControllerDelegate
-//            listServiceBrowserController.maximumNumberOfPeers = 30
-        }
-        else {
-            serviceBrowser = MCNearbyServiceBrowser(peer: peer.deviceID, serviceType: service)
-            serviceBrowser?.delegate = self
-        }
+        serviceBrowser = MCNearbyServiceBrowser(peer: peer.deviceID, serviceType: service)
+        serviceBrowser?.delegate = self
         
         self.delegate = withDelegate
         
     }
     
     //MARK: Conneting Both User One after other
-    func connect(forUser: User, toListPeers: Bool = false, withSecureInvitation: Bool = false, fromViewController: UIViewController? = nil) {
+    func connect(forUser: User, fromViewController: UIViewController? = nil) {
         switch forUser {
             case .Host:
-                scanning(withInvitation: toListPeers, fromViewController: fromViewController)
+                scanning(fromViewController: fromViewController)
             
             case .Peer:
-                start(secureInviting: withSecureInvitation)
+                start()
         }
         
     }
     
     //MARK: Auto Connect for Both Users Simultaneously
-    func autoConnect(toListPeers: Bool = false, withSecureInvitation: Bool = false, fromViewController: UIViewController? = nil) {
-        connect(forUser: .Host, toListPeers: toListPeers, withSecureInvitation: withSecureInvitation, fromViewController: fromViewController)
-        connect(forUser: .Peer, toListPeers: toListPeers, withSecureInvitation: withSecureInvitation)
+    func autoConnect(fromViewController: UIViewController? = nil) {
+        connect(forUser: .Host, fromViewController: fromViewController)
+        connect(forUser: .Peer, fromViewController: fromViewController)
     }
     
     func disconnect() {
         serviceAdvertiser?.stopAdvertisingPeer()
         serviceBrowser?.stopBrowsingForPeers()
-        invitationServiceAdvertiser?.stop()
         connectedPeers.removeAll()
         availablePeers.removeAll()
     }
@@ -167,25 +147,12 @@ class PeerConnectivity: NSObject, PeerNearByConnectivity {
     }
     
     //MARK: Helper Methods
-    fileprivate func start(secureInviting: Bool) {
-        if secureInviting {
-            invitationServiceAdvertiser?.start()
-        }
-        else {
-            serviceAdvertiser?.startAdvertisingPeer()
-        }
+    fileprivate func start() {
+        serviceAdvertiser?.startAdvertisingPeer()
     }
     
-    fileprivate func scanning(withInvitation: Bool, fromViewController: UIViewController?) {
-        if withInvitation {
-            guard let browserController = listServiceBrowserController else {
-                return
-            }
-            fromViewController?.present(browserController, animated: true, completion: nil)
-        }
-        else {
-            serviceBrowser?.startBrowsingForPeers()
-        }
+    fileprivate func scanning(fromViewController: UIViewController?) {
+        serviceBrowser?.startBrowsingForPeers()
     }
 }
 
@@ -280,19 +247,6 @@ extension PeerConnectivity: MCNearbyServiceAdvertiserDelegate {
     
 }
 
-//MARK: Advertiser Assistant
-extension PeerConnectivity: MCAdvertiserAssistantDelegate {
-    
-    func advertiserAssistantWillPresentInvitation(_ advertiserAssistant: MCAdvertiserAssistant) {
-        
-    }
-    
-    func advertiserAssistantDidDismissInvitation(_ advertiserAssistant: MCAdvertiserAssistant) {
-        
-    }
-    
-}
-
 //MARK: Browser Delegate
 extension PeerConnectivity: MCNearbyServiceBrowserDelegate {
     
@@ -327,28 +281,6 @@ extension PeerConnectivity: MCNearbyServiceBrowserDelegate {
     //Error, could not start browsing
     public func browser(_ browser: MCNearbyServiceBrowser, didNotStartBrowsingForPeers error: Error) {
         print("Could not start browsing due to error: \(error)")
-    }
-    
-}
-
-//MARK: BrowserViewController Delegate
-extension PeerConnectivity: MCBrowserViewControllerDelegate {
-    
-    func browserViewControllerDidFinish(_ browserViewController: MCBrowserViewController) {
-        
-    }
-    
-    func browserViewControllerWasCancelled(_ browserViewController: MCBrowserViewController) {
-        
-    }
-    
-    // Notifies delegate that a peer was found; discoveryInfo can be used to
-    // determine whether the peer should be presented to the user, and the
-    // delegate should return a YES if the peer should be presented; this method
-    // is optional, if not implemented every nearby peer will be presented to
-    // the user.
-    func browserViewController(_ browserViewController: MCBrowserViewController, shouldPresentNearbyPeer peerID: MCPeerID, withDiscoveryInfo info: [String : String]?) -> Bool {
-        return true
     }
     
 }
