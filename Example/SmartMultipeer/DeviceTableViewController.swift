@@ -7,7 +7,7 @@
 //
 
 import UIKit
-import MultipeerConnectivity
+import SmartMultipeer
 
 class DeviceTableViewController: UITableViewController {
     
@@ -34,7 +34,7 @@ class DeviceTableViewController: UITableViewController {
         let peer = dataSource[indexPath.row]
         cell.labelDeviceName.text = peer.deviceID.displayName
         
-        let peers = PeerConnectivity.instance.connectedPeers.filter({ (device: PeerDevice) -> Bool in
+        let peers = PeerConnectivity.instance.getConnectedPeers().filter({ (device: PeerDevice) -> Bool in
             return peer.deviceID.displayName == device.deviceID.displayName
         })
         cell.labelDeviceState.text = peers.count > 0 ? (peers[0].state == .connected ? "Connected" : "Not Connected") : "Not Connected"

@@ -10,15 +10,15 @@ import Foundation
 import UIKit
 import MultipeerConnectivity
 
-class PeerDevice: Device, NSSecureCoding {
+open class PeerDevice: Device, NSSecureCoding {
     
-    static var supportsSecureCoding: Bool = true
+    public static var supportsSecureCoding: Bool = true
     
-    func encode(with aCoder: NSCoder) {
+    public func encode(with aCoder: NSCoder) {
         
     }
     
-    required init?(coder aDecoder: NSCoder) {
+    required public init?(coder aDecoder: NSCoder) {
         self.deviceID = MCPeerID(displayName: aDecoder.decodeObject(forKey: "deviceID") as! String)
         self.state = MCSessionState(rawValue: aDecoder.decodeInteger(forKey: "state")) ?? .notConnected
         self.uuid = aDecoder.decodeObject(forKey: "uuid") as? String ?? "Invalid UUID"
@@ -26,12 +26,12 @@ class PeerDevice: Device, NSSecureCoding {
     }
     
     
-    var deviceID: MCPeerID
-    var state: MCSessionState
-    var uuid: String?
-    var connectionTime: Date?
+    public var deviceID: MCPeerID
+    public var state: MCSessionState
+    public var uuid: String?
+    public var connectionTime: Date?
     
-    required init() {
+    required public init() {
         self.deviceID = MCPeerID(displayName: UIDevice.current.name)
         self.state = .notConnected
         self.uuid = UUID().uuidString

@@ -8,7 +8,7 @@
 
 import Foundation
 
-protocol DataSyncDelegate: class {
+public protocol DataSyncDelegate: class {
     
     func sync(dataDidReceive: Any, ofType: Type, at: Date)
     func update(devices: [PeerDevice], at: Date)
@@ -22,7 +22,7 @@ extension DataSyncDelegate {
         print("Optional for Acknowledgment")
     }
     
-    func lost(device:PeerDevice, at: Date) {
+    func lost(device: PeerDevice, at: Date) {
         print("Optional for Lost Device")
     }
     

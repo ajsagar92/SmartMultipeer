@@ -7,9 +7,10 @@
 //
 
 import UIKit
+import SmartMultipeer
 
 class ViewController: UIViewController, DataSyncDelegate {
-
+    
     @IBOutlet weak var connectedDevices: UILabel!
     @IBOutlet weak var textFieldDataSync: UITextField!
     @IBOutlet weak var dataSyncTableView: UITableView!
@@ -110,6 +111,10 @@ class ViewController: UIViewController, DataSyncDelegate {
         devicesAcknowledged[from.deviceID.displayName] = orderDictionary
         sections = 2
         dataSyncTableView.reloadData()
+    }
+    
+    func lost(device: PeerDevice, at: Date) {
+        
     }
 }
 

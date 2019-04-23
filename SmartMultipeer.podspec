@@ -25,7 +25,7 @@ Pod::Spec.new do |s|
     s.source           = { :git => 'https://github.com/ajsagar92/SmartMultipeer.git', :tag => '0.1' }
     s.social_media_url = 'https://www.linkedin.com/in/ajay-sagar-parwani-b7258a47'
     
-    s.ios.deployment_target = '9.3'
+    s.ios.deployment_target = '11.0'
     
     s.source_files = 'SmartMultipeer/**/*.{swift}'
     

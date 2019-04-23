@@ -9,7 +9,7 @@
 import Foundation
 import MultipeerConnectivity
 
-enum User: Int {
+public enum User: Int {
     case Host = 1
     case Peer
 }

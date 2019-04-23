@@ -8,7 +8,7 @@
 
 import Foundation
 
-enum Type: UInt32 {
+public enum Type: UInt32 {
     case Int = 1
     case Double
     case String

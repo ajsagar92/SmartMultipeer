@@ -10,25 +10,25 @@ import UIKit
 import MultipeerConnectivity
 import RealmSwift
 
-class PeerConnectivity: NSObject, PeerNearByConnectivity {
+open class PeerConnectivity: NSObject, PeerNearByConnectivity {
     
-    static let instance = PeerConnectivity()
+    public static let instance = PeerConnectivity()
     
     var connectionTimeOut = 10.0
     
     //Advertising with No Invitation
-    private var serviceAdvertiser: MCNearbyServiceAdvertiser?
+    fileprivate var serviceAdvertiser: MCNearbyServiceAdvertiser?
     
     //Browsing Peers
-    private var serviceBrowser: MCNearbyServiceBrowser?
+    fileprivate var serviceBrowser: MCNearbyServiceBrowser?
     
     //Send / Receive Data Delegate
-    weak var delegate: DataSyncDelegate?
+    fileprivate weak var delegate: DataSyncDelegate?
     
     //Peer
     final let peer: PeerDevice
-    var availablePeers: [PeerDevice]
-    var connectedPeers: [PeerDevice]
+    fileprivate var availablePeers: [PeerDevice]
+    fileprivate var connectedPeers: [PeerDevice]
     
     private lazy var session: MCSession = {
         let session = MCSession(peer: peer.deviceID, securityIdentity: nil, encryptionPreference: .required)
@@ -36,7 +36,7 @@ class PeerConnectivity: NSObject, PeerNearByConnectivity {
         return session
     }()
     
-    var service: String = ""
+    public var service: String = ""
     
     private override init() {
         peer = PeerDevice()
@@ -52,7 +52,7 @@ class PeerConnectivity: NSObject, PeerNearByConnectivity {
         return connectedPeers.count > 0
     }
     //MARK: Setup Peer Connectivity
-    func setup(fromViewController: UIViewController, withDelegate: DataSyncDelegate) {
+    public func setup(fromViewController: UIViewController, withDelegate: DataSyncDelegate) {
         guard service != "" else {
             let alertController = UIAlertController(title: "Setup Issue", message: "Error: Service Type", preferredStyle: .alert)
             let alertAction = UIAlertAction(title: "OK", style: .default, handler: nil)
@@ -75,7 +75,7 @@ class PeerConnectivity: NSObject, PeerNearByConnectivity {
     }
     
     //MARK: Conneting Both User One after other
-    func connect(forUser: User, fromViewController: UIViewController? = nil) {
+    public func connect(forUser: User, fromViewController: UIViewController? = nil) {
         switch forUser {
             case .Host:
                 scanning(fromViewController: fromViewController)
@@ -87,12 +87,12 @@ class PeerConnectivity: NSObject, PeerNearByConnectivity {
     }
     
     //MARK: Auto Connect for Both Users Simultaneously
-    func autoConnect(fromViewController: UIViewController? = nil) {
+    public func autoConnect(fromViewController: UIViewController? = nil) {
         connect(forUser: .Host, fromViewController: fromViewController)
         connect(forUser: .Peer, fromViewController: fromViewController)
     }
     
-    func disconnect() {
+    public func disconnect() {
         serviceAdvertiser?.stopAdvertisingPeer()
         serviceBrowser?.stopBrowsingForPeers()
         connectedPeers.removeAll()
@@ -100,7 +100,7 @@ class PeerConnectivity: NSObject, PeerNearByConnectivity {
     }
     
     //MARK: Send Data with Type
-    func send(data: Any, ofType: Type, withID: Any) {
+    public func send(data: Any, ofType: Type, withID: Any) {
         
         switch ofType {
             case .Acknowledge:
@@ -141,8 +141,17 @@ class PeerConnectivity: NSObject, PeerNearByConnectivity {
         
     }
     
+    //MARK: Peer
+    public func getAvailablePeers() -> [PeerDevice] {
+        return availablePeers
+    }
+    
+    public func getConnectedPeers() -> [PeerDevice] {
+        return connectedPeers
+    }
+    
     //MARK: Realm
-    func getAllRegisteredDevices() -> [PeerDevice] {
+    public func getAllRegisteredDevices() -> [PeerDevice] {
         return RealmHelper.instance.getDevicesHistory()
     }
     
@@ -159,7 +168,7 @@ class PeerConnectivity: NSObject, PeerNearByConnectivity {
 //MARK: Session Delegate
 extension PeerConnectivity: MCSessionDelegate {
     
-    func session(_ session: MCSession, peer peerID: MCPeerID, didChange state: MCSessionState) {
+    public func session(_ session: MCSession, peer peerID: MCPeerID, didChange state: MCSessionState) {
         
         switch state {
             case .connected:
@@ -224,7 +233,7 @@ extension PeerConnectivity: MCSessionDelegate {
         print("Finished receiving resource with name: \(resourceName)")
     }
     
-    func session(_ session: MCSession, didReceiveCertificate certificate: [Any]?, fromPeer peerID: MCPeerID, certificateHandler: @escaping (Bool) -> Void) {
+    private func session(_ session: MCSession, didReceiveCertificate certificate: [Any]?, fromPeer peerID: MCPeerID, certificateHandler: @escaping (Bool) -> Void) {
         certificateHandler(true)
     }
     
