@@ -1,6 +1,6 @@
 # SmartMultipeer
 
-[![CI Status](https://img.shields.io/travis/ajay.sagar92@gmail.com/SmartMultipeer.svg?style=flat)](https://travis-ci.org/a.sagar@wizsoft.pk/SmartMultipeer)
+[![CI Status](https://img.shields.io/travis/ajsagar92/SmartMultipeer.svg?style=flat)](https://travis-ci.org/ajsagar92/SmartMultipeer)
 [![Version](https://img.shields.io/cocoapods/v/SmartMultipeer.svg?style=flat)](https://cocoapods.org/pods/SmartMultipeer)
 [![License](https://img.shields.io/cocoapods/l/SmartMultipeer.svg?style=flat)](https://cocoapods.org/pods/SmartMultipeer)
 [![Platform](https://img.shields.io/cocoapods/p/SmartMultipeer.svg?style=flat)](https://cocoapods.org/pods/SmartMultipeer)
