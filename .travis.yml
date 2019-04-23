@@ -2,7 +2,7 @@
 # * https://www.objc.io/issues/6-build-tools/travis-ci/
 # * https://github.com/supermarin/xcpretty#usage
 
-osx_image: xcode10.1
+osx_image: xcode8
 language: swift
 xcode_project: SmartMultipeer.xcodeproj
 xcode_scheme: SmartMultipeer
