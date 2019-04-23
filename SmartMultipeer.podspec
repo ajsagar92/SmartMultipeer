@@ -10,7 +10,7 @@ Pod::Spec.new do |s|
     s.name             = 'SmartMultipeer'
     s.version          = '0.1'
     s.summary          = 'Multipeer Connectivity for iOS Devices with Acknowlegement'
-    s.swift_version    = '4'
+    s.swift_version    = '4.0'
     s.platform     = :ios, '11.0'
     
     # This description is used to generate tags and improve search results.
@@ -24,7 +24,7 @@ Pod::Spec.new do |s|
     s.homepage         = 'https://github.com/ajsagar92/SmartMultipeer'
     s.license          = { :type => 'MIT', :file => 'LICENSE' }
     s.author           = { 'ajay.sagar' => 'ajay.sagar92@gmail.com' }
-    s.source           = { :git => 'https://github.com/ajsagar92/SmartMultipeer.git', :tag => '#{0.1}' }
+    s.source           = { :git => 'https://github.com/ajsagar92/SmartMultipeer.git', :tag => '0.1' }
     
     s.ios.deployment_target = '11.0'
     
