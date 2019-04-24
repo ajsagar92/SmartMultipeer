@@ -11,7 +11,7 @@ Pod::Spec.new do |s|
     s.version          = '0.1'
     s.summary          = 'Multipeer Connectivity for iOS Devices with Acknowlegement'
     s.platform         =    :ios
-    s.swift_version    = "4.2"
+    s.swift_version    =  '4.2'
     s.ios.deployment_target = '11.0'
     
     # This description is used to generate tags and improve search results.
@@ -23,8 +23,8 @@ Pod::Spec.new do |s|
     s.description      = 'Smart Multipeer Connectivity designed with acknowledgment facility that includes the time of delivery with the id of data sent. You can set primary id of your model which you want to sync'
     
     s.homepage         = 'https://github.com/ajsagar92/SmartMultipeer'
-    s.license          = { :type => 'MIT', :file => 'LICENSE' }
-    s.author           = { 'ajsagar92)' => 'ajay.sagar92@gmail.com' }
+    s.license          = { :type => 'Copyright', :file => 'LICENSE' }
+    s.author           = { 'Ajay Sagar Parwani' => 'ajay.sagar92@gmail.com' }
     s.source           = { :git => 'https://github.com/ajsagar92/SmartMultipeer.git', :tag => '0.1' }
     
     s.ios.deployment_target = '11.0'
