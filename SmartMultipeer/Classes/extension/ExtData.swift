@@ -11,14 +11,7 @@ import Foundation
 extension Data {
     
     func convert() -> Container? {
-        var unarchivedObject: Container? = nil
-        do {
-            unarchivedObject = try NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(self) as? Container
-            
-        } catch {
-            fatalError("Unable to Unarchive")
-        }
-        return unarchivedObject
+        return NSKeyedUnarchiver.unarchiveObject(with: self) as? Container
     }
     
     /// Converts an object into Data using NSKeyedArchiver
