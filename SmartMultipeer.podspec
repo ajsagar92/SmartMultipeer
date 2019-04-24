@@ -25,7 +25,7 @@ Pod::Spec.new do |s|
     s.homepage         = 'https://github.com/ajsagar92/SmartMultipeer'
     s.license          = { :type => 'MIT', :file => 'LICENSE' }
     s.author           = { 'ajsagar92)' => 'ajay.sagar92@gmail.com' }
-    s.source           = { :git => 'https://github.com/ajsagar92/SmartMultipeer.git', :tag => '#{s.version}' }
+    s.source           = { :git => 'https://github.com/ajsagar92/SmartMultipeer.git', :tag => '0.1' }
     
     s.ios.deployment_target = '11.0'
     
