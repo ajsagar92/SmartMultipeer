@@ -26,22 +26,22 @@ open class PeerConnectivity: NSObject, PeerNearByConnectivity {
     fileprivate weak var delegate: DataSyncDelegate?
     
     //Peer
-    final let peer: PeerDevice
+    let peer: PeerDevice
     fileprivate var availablePeers: [PeerDevice]
     fileprivate var connectedPeers: [PeerDevice]
     
-    private lazy var session: MCSession = {
-        let session = MCSession(peer: peer.deviceID, securityIdentity: nil, encryptionPreference: .required)
-        session.delegate = self
-        return session
-    }()
+    fileprivate let session: MCSession
     
     public var service: String = ""
     
     private override init() {
-        peer = PeerDevice()
+        
         availablePeers = []
         connectedPeers = []
+        peer = PeerDevice()
+        session = MCSession(peer: peer.deviceID, securityIdentity: nil, encryptionPreference: .required)
+        super.init()
+        session.delegate = self
     }
     
     deinit {

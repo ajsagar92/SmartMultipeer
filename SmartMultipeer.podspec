@@ -10,7 +10,6 @@ Pod::Spec.new do |s|
     s.name             = 'SmartMultipeer'
     s.version          = '0.1'
     s.summary          = 'Multipeer Connectivity for iOS Devices with Acknowlegement'
-    s.swift_version    = '4.0'
     s.platform     = :ios, '11.0'
     
     # This description is used to generate tags and improve search results.

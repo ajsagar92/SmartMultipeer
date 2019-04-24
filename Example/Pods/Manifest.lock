@@ -4,7 +4,7 @@ PODS:
   - Realm/Headers (3.14.1)
   - RealmSwift (3.14.1):
     - Realm (= 3.14.1)
-  - SmartMultipeer (0.1.0):
+  - SmartMultipeer (0.1):
     - RealmSwift
 
 DEPENDENCIES:
@@ -22,7 +22,7 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   Realm: e12c9c2387d05c5bba3a9c394838f5870e85763b
   RealmSwift: a82eab9b04c3e1616082c7e17aa300740847769c
-  SmartMultipeer: d8fa70f1a14145e1f0ca1c580e453b4ec89296ce
+  SmartMultipeer: abf4788377c4cc7c6154290a7f8f0b7e7cc153d6
 
 PODFILE CHECKSUM: 7ea3352152f68a6d57c46674ca90f5d312f850a0
 
