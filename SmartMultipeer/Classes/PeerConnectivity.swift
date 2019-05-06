@@ -48,16 +48,15 @@ open class PeerConnectivity: NSObject, PeerNearByConnectivity {
         disconnect()
     }
     
-    var isConnected: Bool {
-        return connectedPeers.count > 0
+    public var isConnected: Bool {
+        get {
+            return connectedPeers.count > 0
+        }
     }
     //MARK: Setup Peer Connectivity
-    public func setup(fromViewController: UIViewController, withDelegate: DataSyncDelegate) {
+    public func setup(withDelegate: DataSyncDelegate, withCompletionHandler: @escaping(Bool) -> ()) {
         guard service != "" else {
-            let alertController = UIAlertController(title: "Setup Issue", message: "Error: Service Type", preferredStyle: .alert)
-            let alertAction = UIAlertAction(title: "OK", style: .default, handler: nil)
-            alertController.addAction(alertAction)
-            fromViewController.present(alertController, animated: true, completion: nil)
+            withCompletionHandler(false)
             return
         }
         
@@ -71,6 +70,7 @@ open class PeerConnectivity: NSObject, PeerNearByConnectivity {
         serviceBrowser?.delegate = self
         
         self.delegate = withDelegate
+        withCompletionHandler(true)
         
     }
     
@@ -105,23 +105,23 @@ open class PeerConnectivity: NSObject, PeerNearByConnectivity {
         switch ofType {
             case .Acknowledge:
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.0, execute: {
-                guard let devices = data as? [PeerDevice], devices.count > 0 else {
-                    return
-                }
-                do {
-                    let container = Container(data: "Acknowledged" , ofType: ofType, forDataID: withID)
-                        guard let convertedData = Data.toData(object: container) else {
-                        print("Data Not Converted \(data)")
+                    guard let devices = data as? [PeerDevice], devices.count > 0 else {
                         return
                     }
-                    try self.session.send(convertedData, toPeers: self.session.connectedPeers.filter({ (peer: MCPeerID) -> Bool in
-                        return peer.displayName == devices[0].deviceID.displayName
-                    }), with: .reliable)
-                }
-                catch let error {
-                    print(error.localizedDescription)
-                }
-            })
+                    do {
+                        let container = Container(data: "Acknowledged" , ofType: ofType, forDataID: withID)
+                        guard let convertedData = Data.toData(object: container) else {
+                            print("Data Not Converted \(data)")
+                            return
+                        }
+                        try self.session.send(convertedData, toPeers: self.session.connectedPeers.filter({ (peer: MCPeerID) -> Bool in
+                            return peer.displayName == devices[0].deviceID.displayName
+                        }), with: .reliable)
+                    }
+                    catch let error {
+                        print(error.localizedDescription)
+                    }
+                })
             
             default:
                 if isConnected {
@@ -175,6 +175,7 @@ extension PeerConnectivity: MCSessionDelegate {
                 availablePeers = availablePeers.filter {
                     $0.deviceID != peerID
                 }
+                print("connected \(peerID.displayName)..")
             
             case .connecting:
                 availablePeers.filter { $0.deviceID == peerID }.first?.state = state
@@ -213,7 +214,6 @@ extension PeerConnectivity: MCSessionDelegate {
                 default:
                     self.delegate?.sync(dataDidReceive: container.data, ofType: container.type, at: Date())
                 PeerConnectivity.instance.send(data: [PeerDevice(withID: peerID.displayName, state: .connected, udid: nil)], ofType: .Acknowledge, withID: container.id)
-//                    PeerConnectivity.instance.send(data: Container(data: [PeerDevice(withID: peerID.displayName, state: .connected, udid: nil)], ofType: .Acknowledge, forDataID: container.id), ofType: .Acknowledge)
             }
         }
     }

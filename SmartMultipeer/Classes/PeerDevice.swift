@@ -10,7 +10,18 @@ import Foundation
 import UIKit
 import MultipeerConnectivity
 
-open class PeerDevice: Device, NSSecureCoding {
+open class PeerDevice: Device, NSSecureCoding, Hashable {
+    
+    public static func == (lhs: PeerDevice, rhs: PeerDevice) -> Bool {
+        return lhs.deviceID.displayName == rhs.deviceID.displayName
+//        return (lhs.deviceID.displayName == rhs.deviceID.displayName && lhs.uuid == rhs.uuid) || (lhs.connectionTime == rhs.connectionTime || lhs.state == rhs.state)
+    }
+    
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(deviceID.displayName)
+//        hasher.combine(uuid)
+    }
+    
     
     public static var supportsSecureCoding: Bool = true
     
@@ -36,6 +47,13 @@ open class PeerDevice: Device, NSSecureCoding {
         self.state = .notConnected
         self.uuid = UUID().uuidString
         self.connectionTime = Date()
+    }
+    
+    public init(displayName: String, uuid: String?) {
+        self.deviceID = MCPeerID(displayName: displayName)
+        self.uuid = uuid
+        self.connectionTime = Date()
+        self.state = .notConnected
     }
     
     init(withID: String, state: MCSessionState, udid: String?) {

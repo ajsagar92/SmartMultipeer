@@ -15,7 +15,7 @@ extension Data {
     }
     
     /// Converts an object into Data using NSKeyedArchiver
-    static func toData(object: Container) -> Data? {
+    public static func toData(object: Container) -> Data? {
         do {
             return try NSKeyedArchiver.archivedData(withRootObject: object, requiringSecureCoding: true)
         }

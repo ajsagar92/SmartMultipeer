@@ -8,17 +8,17 @@
 
 import Foundation
 
-class Container: NSObject, NSSecureCoding {
+open class Container: NSObject, NSSecureCoding {
     
-    static var supportsSecureCoding: Bool = true
+    public static var supportsSecureCoding: Bool = true
     
-    func encode(with aCoder: NSCoder) {
+    public func encode(with aCoder: NSCoder) {
         aCoder.encode(data, forKey: "data")
         aCoder.encodeCInt(Int32(type.rawValue), forKey: "type")
         aCoder.encode(id, forKey: "id")
     }
     
-    required init?(coder aDecoder: NSCoder) {
+    required public init?(coder aDecoder: NSCoder) {
         if let data = aDecoder.decodeObject(forKey: "data") {
             self.data = data
         }
@@ -46,7 +46,7 @@ class Container: NSObject, NSSecureCoding {
     var type: Type
     var id: Any
     
-    init(data: Any, ofType: Type, forDataID: Any) {
+    public init(data: Any, ofType: Type, forDataID: Any) {
         self.data = data
         self.type = ofType
         self.id = forDataID

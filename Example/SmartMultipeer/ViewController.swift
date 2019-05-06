@@ -61,8 +61,9 @@ class ViewController: UIViewController, DataSyncDelegate {
     func setup() {
         if !isSetupDone {
             PeerConnectivity.instance.service = "sample-service"
-            PeerConnectivity.instance.setup(fromViewController: self, withDelegate: self)
-            isSetupDone = true
+            PeerConnectivity.instance.setup(withDelegate: self) { (isDone) in
+                self.isSetupDone = isDone
+            }
         }
         
         dataSyncTableView.reloadData()
