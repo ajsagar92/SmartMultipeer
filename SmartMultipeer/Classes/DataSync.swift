@@ -10,7 +10,7 @@ import Foundation
 
 public protocol DataSyncDelegate: class {
     
-    func sync(dataDidReceive: Any, ofType: Type, at: Date)
+    func sync(dataDidReceive: Any, ofType: Type, at: Date, fromPeer: PeerDevice)
     func update(devices: [PeerDevice], at: Date)
     func lost(device: PeerDevice, at: Date)
     func acknowledge(from: PeerDevice, at: Date, forDataID: Any)

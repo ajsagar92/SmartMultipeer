@@ -200,7 +200,7 @@ extension PeerConnectivity: MCSessionDelegate {
     
     //Received data, update delegate didRecieveData
     public func session(_ session: MCSession, didReceive data: Data, fromPeer peerID: MCPeerID) {
-        print("Received data: \(data.count) bytes")
+        print("Received data: \(data.count) bytes from \(peerID.displayName)")
         
         guard let container = data.convert() else { return }
         
@@ -212,8 +212,8 @@ extension PeerConnectivity: MCSessionDelegate {
                     }
                 
                 default:
-                    self.delegate?.sync(dataDidReceive: container.data, ofType: container.type, at: Date())
-                PeerConnectivity.instance.send(data: [PeerDevice(withID: peerID.displayName, state: .connected, udid: nil)], ofType: .Acknowledge, withID: container.id)
+                    self.delegate?.sync(dataDidReceive: container.data, ofType: container.type, at: Date(), fromPeer: PeerDevice(displayName: peerID.displayName, uuid: nil))
+                    PeerConnectivity.instance.send(data: [PeerDevice(withID: peerID.displayName, state: .connected, udid: nil)], ofType: .Acknowledge, withID: container.id)
             }
         }
     }
