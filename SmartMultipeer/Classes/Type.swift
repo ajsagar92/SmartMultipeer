@@ -13,8 +13,9 @@ public enum Type: UInt32 {
     case Double
     case String
     case Image
-    case NSData
+    case Dictionary
     case Custom
+    case Disconnect
     case Acknowledge
     
     static func getType(type: Type) -> UInt32 {

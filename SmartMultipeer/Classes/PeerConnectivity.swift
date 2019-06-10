@@ -27,17 +27,21 @@ open class PeerConnectivity: NSObject, PeerNearByConnectivity {
     
     //Peer
     let peer: PeerDevice
-    fileprivate var availablePeers: [PeerDevice]
-    fileprivate var connectedPeers: [PeerDevice]
+    
+    fileprivate var nearbyPeers: [PeerDevice]
     
     fileprivate let session: MCSession
+    
+    //Invitations
+    fileprivate var invitationHandlers: Dictionary<String, (Bool, MCSession?) -> Void> = Dictionary()
     
     public var service: String = ""
     
     private override init() {
         
-        availablePeers = []
-        connectedPeers = []
+//        availablePeers = []
+//        connectedPeers = []
+        nearbyPeers = []
         peer = PeerDevice()
         session = MCSession(peer: peer.deviceID, securityIdentity: nil, encryptionPreference: .required)
         super.init()
@@ -50,7 +54,9 @@ open class PeerConnectivity: NSObject, PeerNearByConnectivity {
     
     public var isConnected: Bool {
         get {
-            return connectedPeers.count > 0
+            return nearbyPeers.filter({ (peer: PeerDevice) -> Bool in
+                peer.state == .connected
+            }).count > 0
         }
     }
     //MARK: Setup Peer Connectivity
@@ -92,20 +98,36 @@ open class PeerConnectivity: NSObject, PeerNearByConnectivity {
         connect(forUser: .Peer, fromViewController: fromViewController)
     }
     
-    public func disconnect() {
-        serviceAdvertiser?.stopAdvertisingPeer()
-        serviceBrowser?.stopBrowsingForPeers()
-        connectedPeers.removeAll()
-        availablePeers.removeAll()
+    public func disconnect(_ forUser: User? = nil) {
+        guard let user = forUser else {
+            serviceAdvertiser?.stopAdvertisingPeer()
+            serviceBrowser?.stopBrowsingForPeers()
+            nearbyPeers.removeAll()
+//            connectedPeers.removeAll()
+//            availablePeers.removeAll()
+            return
+        }
+        switch user {
+            case .Peer:
+                start(false)
+            default:
+            break
+            
+        }
+    }
+    
+    public func sendInvitation(toPeer: PeerDevice) {
+        serviceBrowser?.invitePeer(toPeer.deviceID, to: session, withContext: nil, timeout: connectionTimeOut)
     }
     
     //MARK: Send Data with Type
-    public func send(data: Any, ofType: Type, withID: Any) {
+    public func send(data: Any, ofType: Type, withID: Any, to: PeerDevice? = nil) {
         
         switch ofType {
             case .Acknowledge:
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.0, execute: {
                     guard let devices = data as? [PeerDevice], devices.count > 0 else {
+                        print("Unable to Acknowledge")
                         return
                     }
                     do {
@@ -114,9 +136,12 @@ open class PeerConnectivity: NSObject, PeerNearByConnectivity {
                             print("Data Not Converted \(data)")
                             return
                         }
-                        try self.session.send(convertedData, toPeers: self.session.connectedPeers.filter({ (peer: MCPeerID) -> Bool in
+                        let peerToAcknowledge = self.session.connectedPeers.filter({ (peer: MCPeerID) -> Bool in
                             return peer.displayName == devices[0].deviceID.displayName
-                        }), with: .reliable)
+                        })
+                        print("Acknowledging Peer Count: \(peerToAcknowledge.count)")
+	                        print("Acknowledging Peer: \(peerToAcknowledge[0].displayName)")
+                        try self.session.send(convertedData, toPeers: peerToAcknowledge, with: .reliable)
                     }
                     catch let error {
                         print(error.localizedDescription)
@@ -131,7 +156,9 @@ open class PeerConnectivity: NSObject, PeerNearByConnectivity {
                             print("Data Not Converted \(data)")
                             return
                         }
-                        try session.send(convertedData, toPeers: session.connectedPeers, with: .reliable)
+                        try session.send(convertedData, toPeers: to == nil ? session.connectedPeers : self.session.connectedPeers.filter({ (peer: MCPeerID) -> Bool in
+                            return peer.displayName == to?.deviceID.displayName
+                        }), with: .reliable)
                     }
                     catch let error {
                         print(error.localizedDescription)
@@ -143,11 +170,33 @@ open class PeerConnectivity: NSObject, PeerNearByConnectivity {
     
     //MARK: Peer
     public func getAvailablePeers() -> [PeerDevice] {
+        let availablePeers = nearbyPeers.filter { (peer: PeerDevice) -> Bool in
+            peer.state == .connecting
+        }
         return availablePeers
     }
     
     public func getConnectedPeers() -> [PeerDevice] {
+        let connectedPeers = nearbyPeers.filter { (peer: PeerDevice) -> Bool in
+            peer.state == .connected
+        }
+//        let connectedPeers = session.connectedPeers.map {
+//            PeerDevice(withID: $0.displayName, state: .connected, udid: nil) }
         return connectedPeers
+    }
+    
+    public func getHistoryDisconnectedPeers() -> [PeerDevice] {
+        let historyDevices = Set<PeerDevice>(PeerConnectivity.instance.getAllRegisteredDevices())
+        let connectedDevices = Set<PeerDevice>(PeerConnectivity.instance.getConnectedPeers())
+
+        return Array(historyDevices.symmetricDifference(connectedDevices))
+    }
+    
+    public func getCurrentDisconnectPeers() -> [PeerDevice] {
+        let disconnectedPeers = nearbyPeers.filter { (peer: PeerDevice) -> Bool in
+            peer.state == .notConnected
+        }
+        return disconnectedPeers
     }
     
     //MARK: Realm
@@ -156,8 +205,13 @@ open class PeerConnectivity: NSObject, PeerNearByConnectivity {
     }
     
     //MARK: Helper Methods
-    fileprivate func start() {
-        serviceAdvertiser?.startAdvertisingPeer()
+    fileprivate func start(_ isJoin: Bool = true) {
+        if isJoin {
+            serviceAdvertiser?.startAdvertisingPeer()
+        }
+        else {
+            serviceAdvertiser?.stopAdvertisingPeer()
+        }
     }
     
     fileprivate func scanning(fromViewController: UIViewController?) {
@@ -169,32 +223,23 @@ open class PeerConnectivity: NSObject, PeerNearByConnectivity {
 extension PeerConnectivity: MCSessionDelegate {
     
     public func session(_ session: MCSession, peer peerID: MCPeerID, didChange state: MCSessionState) {
-        
         switch state {
             case .connected:
-                availablePeers = availablePeers.filter {
-                    $0.deviceID != peerID
-                }
-                print("connected \(peerID.displayName)..")
+                nearbyPeers.filter { $0.deviceID.displayName == peerID.displayName }.first?.state = .connected
+                print("Connected \(peerID.displayName).")
             
             case .connecting:
-                availablePeers.filter { $0.deviceID == peerID }.first?.state = state
                 print("Connecting \(peerID.displayName)..")
-            
+                nearbyPeers.filter { $0.deviceID.displayName == peerID.displayName }.first?.state = .connecting
             
             case .notConnected:
-                availablePeers.filter { $0.deviceID == peerID }.first?.state = state
+                nearbyPeers.filter { $0.deviceID.displayName == peerID.displayName }.first?.state = .notConnected
                 self.delegate?.lost(device: PeerDevice(withID: peerID.displayName, state: .notConnected, udid: nil), at: Date())
             
         }
         
-        // Update all connected peers
-        connectedPeers = session.connectedPeers.map {
-            PeerDevice(withID: $0.displayName, state: .connected, udid: nil) }
-        
-        // Send new connection list to delegate
         DispatchQueue.main.async {
-            self.delegate?.update(devices: self.connectedPeers, at: Date())
+            self.delegate?.update(devices: self.nearbyPeers, at: Date())
         }
     }
     
@@ -208,6 +253,7 @@ extension PeerConnectivity: MCSessionDelegate {
             switch container.type {
                 case .Acknowledge:
                     DispatchQueue.main.async {
+                        print("Acknowledgment from: \(peerID.displayName) for data: \(container.id)")
                         self.delegate?.acknowledge(from: PeerDevice(withID: peerID.displayName, state: .connected, udid: nil), at: Date(), forDataID: container.id)
                     }
                 
@@ -243,10 +289,12 @@ extension PeerConnectivity: MCNearbyServiceAdvertiserDelegate {
     
     // Received invitation
     public func advertiser(_ advertiser: MCNearbyServiceAdvertiser, didReceiveInvitationFromPeer peerID: MCPeerID, withContext context: Data?, invitationHandler: @escaping (Bool, MCSession?) -> Void) {
+        print("Invitation Received \(peerID.displayName)")
+//        invitationHandlers[peerID.displayName] = invitationHandler
         
-//        OperationQueue.main.addOperation {
+        OperationQueue.main.addOperation {
             invitationHandler(true, self.session)
-//        }
+        }
     }
     
     //Error, could not start advertising
@@ -261,10 +309,14 @@ extension PeerConnectivity: MCNearbyServiceBrowserDelegate {
     
     public func browser(_ browser: MCNearbyServiceBrowser, foundPeer peerID: MCPeerID, withDiscoveryInfo info: [String: String]?) {
         print("Found peer: \(peerID)")
-        
-        let foundPeer = PeerDevice(withID: peerID.displayName, state: .notConnected, udid: UIDevice.current.identifierForVendor?.uuidString)
-        
-        availablePeers.append(foundPeer)
+        let foundPeer = PeerDevice(withID: peerID.displayName, state: .connecting, udid: nil)
+        let isPeerInList = nearbyPeers.contains(where: { (peer: PeerDevice) -> Bool in
+            peer.deviceID.displayName == peerID.displayName
+        })
+        if !isPeerInList {
+            nearbyPeers.append(foundPeer)
+        }
+        nearbyPeers.filter { $0.deviceID.displayName == peerID.displayName }.first?.state = .connecting
         
         browser.invitePeer(peerID, to: session, withContext: nil, timeout: connectionTimeOut)
         
@@ -272,17 +324,17 @@ extension PeerConnectivity: MCNearbyServiceBrowserDelegate {
             return
         }
         RealmHelper.instance.store(device: foundPeer)
+        self.delegate?.update(devices: self.nearbyPeers, at: Date())
     }
     
     //Lost a peer, update the list of available peers
     public func browser(_ browser: MCNearbyServiceBrowser, lostPeer peerID: MCPeerID) {
-        print("Lost peer: \(peerID)")
+        print("Lost peer: \(peerID.displayName)")
         
         // Update the lost peer
-        availablePeers = availablePeers.filter { $0.deviceID != peerID }
-        connectedPeers = connectedPeers.filter { $0.deviceID != peerID }
+        nearbyPeers.filter { $0.deviceID.displayName == peerID.displayName }.first?.state = .notConnected
         DispatchQueue.main.async {
-            self.delegate?.update(devices: self.connectedPeers, at: Date())
+            self.delegate?.update(devices: self.nearbyPeers, at: Date())
             self.delegate?.lost(device: PeerDevice(withID: peerID.displayName, state: .notConnected, udid: nil), at: Date())
         }
     }
