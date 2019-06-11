@@ -61,6 +61,12 @@ open class PeerDevice: Device, NSSecureCoding, Hashable {
         self.state = state
         self.uuid = udid
     }
+    
+    init(withPeer: MCPeerID, state: MCSessionState, udid: String?) {
+        self.deviceID = withPeer
+        self.state = state
+        self.uuid = udid
+    }
 }
 
 protocol Device {

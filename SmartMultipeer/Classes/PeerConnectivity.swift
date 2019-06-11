@@ -32,6 +32,8 @@ open class PeerConnectivity: NSObject, PeerNearByConnectivity {
     
     fileprivate let session: MCSession
     
+    fileprivate var needsPairing: Bool = false
+    
     //Invitations
     fileprivate var invitationHandlers: Dictionary<String, (Bool, MCSession?) -> Void> = Dictionary()
     
@@ -60,7 +62,7 @@ open class PeerConnectivity: NSObject, PeerNearByConnectivity {
         }
     }
     //MARK: Setup Peer Connectivity
-    public func setup(withDelegate: DataSyncDelegate, withCompletionHandler: @escaping(Bool) -> ()) {
+    public func setup(withDelegate: DataSyncDelegate, needsPairing: Bool = false, withCompletionHandler: @escaping(Bool) -> ()) {
         guard service != "" else {
             withCompletionHandler(false)
             return
@@ -76,6 +78,7 @@ open class PeerConnectivity: NSObject, PeerNearByConnectivity {
         serviceBrowser?.delegate = self
         
         self.delegate = withDelegate
+        self.needsPairing = needsPairing
         withCompletionHandler(true)
         
     }
@@ -116,8 +119,13 @@ open class PeerConnectivity: NSObject, PeerNearByConnectivity {
         }
     }
     
-    public func sendInvitation(toPeer: PeerDevice) {
-        serviceBrowser?.invitePeer(toPeer.deviceID, to: session, withContext: nil, timeout: connectionTimeOut)
+    public func sendInvitationForPairing(toPeer: PeerDevice) {
+        guard needsPairing, let peerToPaired = getAvailablePeers().filter({ (peer: PeerDevice) -> Bool in
+            toPeer.deviceID.displayName == peer.deviceID.displayName
+        }).first else {
+            return
+        }
+        serviceBrowser?.invitePeer(peerToPaired.deviceID, to: session, withContext: nil, timeout: connectionTimeOut)
     }
     
     //MARK: Send Data with Type
@@ -188,8 +196,9 @@ open class PeerConnectivity: NSObject, PeerNearByConnectivity {
     public func getHistoryDisconnectedPeers() -> [PeerDevice] {
         let historyDevices = Set<PeerDevice>(PeerConnectivity.instance.getAllRegisteredDevices())
         let connectedDevices = Set<PeerDevice>(PeerConnectivity.instance.getConnectedPeers())
+        let availableDevices = Set<PeerDevice>(PeerConnectivity.instance.getAvailablePeers())
 
-        return Array(historyDevices.symmetricDifference(connectedDevices))
+        return Array((historyDevices.symmetricDifference(connectedDevices)).symmetricDifference(availableDevices))
     }
     
     public func getCurrentDisconnectPeers() -> [PeerDevice] {
@@ -290,7 +299,6 @@ extension PeerConnectivity: MCNearbyServiceAdvertiserDelegate {
     // Received invitation
     public func advertiser(_ advertiser: MCNearbyServiceAdvertiser, didReceiveInvitationFromPeer peerID: MCPeerID, withContext context: Data?, invitationHandler: @escaping (Bool, MCSession?) -> Void) {
         print("Invitation Received \(peerID.displayName)")
-//        invitationHandlers[peerID.displayName] = invitationHandler
         
         OperationQueue.main.addOperation {
             invitationHandler(true, self.session)
@@ -309,7 +317,7 @@ extension PeerConnectivity: MCNearbyServiceBrowserDelegate {
     
     public func browser(_ browser: MCNearbyServiceBrowser, foundPeer peerID: MCPeerID, withDiscoveryInfo info: [String: String]?) {
         print("Found peer: \(peerID)")
-        let foundPeer = PeerDevice(withID: peerID.displayName, state: .connecting, udid: nil)
+        let foundPeer = PeerDevice(withPeer: peerID, state: .connecting, udid: nil)
         let isPeerInList = nearbyPeers.contains(where: { (peer: PeerDevice) -> Bool in
             peer.deviceID.displayName == peerID.displayName
         })
@@ -318,13 +326,15 @@ extension PeerConnectivity: MCNearbyServiceBrowserDelegate {
         }
         nearbyPeers.filter { $0.deviceID.displayName == peerID.displayName }.first?.state = .connecting
         
-        browser.invitePeer(peerID, to: session, withContext: nil, timeout: connectionTimeOut)
+        if !needsPairing {
+            browser.invitePeer(peerID, to: session, withContext: nil, timeout: connectionTimeOut)
+        }
+        self.delegate?.update(devices: self.nearbyPeers, at: Date())
         
         guard !(RealmHelper.instance.getDevicesHistory().contains { $0.deviceID.displayName == foundPeer.deviceID.displayName }) else {
             return
         }
         RealmHelper.instance.store(device: foundPeer)
-        self.delegate?.update(devices: self.nearbyPeers, at: Date())
     }
     
     //Lost a peer, update the list of available peers

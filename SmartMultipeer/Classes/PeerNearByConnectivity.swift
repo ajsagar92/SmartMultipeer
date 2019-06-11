@@ -18,14 +18,13 @@ protocol PeerNearByConnectivity {
     
     var service: String { get set }
     
-    func setup(withInvitation: Bool, toListPeers: Bool)
-    func connect(for: User)
-    
+    func setup(withDelegate: DataSyncDelegate, needsPairing: Bool, withCompletionHandler: @escaping(Bool) -> ())
+    func connect(forUser: User, fromViewController: UIViewController?)
+    func sendInvitationForPairing(toPeer: PeerDevice)
 }
 
 extension PeerNearByConnectivity {
-    
-    func setup(withInvitation: Bool = false, toListPeers: Bool = false) {}
-    func connect(for: User) {}
-    
+    func sendInvitationForPairing(toPeer: PeerDevice) {
+        print("You need to implement")
+    }
 }
