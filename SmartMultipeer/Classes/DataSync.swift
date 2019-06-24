@@ -13,7 +13,10 @@ public protocol DataSyncDelegate: class {
     func sync(dataDidReceive: Any, ofType: Type, at: Date, fromPeer: PeerDevice)
     func update(devices: [PeerDevice], at: Date)
     func lost(device: PeerDevice, at: Date)
+    func found(device: PeerDevice, at: Date)
+    func disconnect(device: PeerDevice, at: Date)
     func acknowledge(from: PeerDevice, at: Date, forDataID: Any)
+    func unpair(from: PeerDevice, at: Date)
 }
 
 extension DataSyncDelegate {
@@ -24,6 +27,18 @@ extension DataSyncDelegate {
     
     func lost(device: PeerDevice, at: Date) {
         print("Optional for Lost Device")
+    }
+    
+    func unpair(from: PeerDevice, at: Date) {
+        print("Optional for Unpair Device")
+    }
+    
+    func found(device: PeerDevice, at: Date) {
+        print("Optional for Found Device")
+    }
+    
+    func disconnect(device: PeerDevice, at: Date) {
+        print("Optional for Disconnect Device")
     }
     
 }

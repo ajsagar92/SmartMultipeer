@@ -19,8 +19,8 @@ protocol PeerNearByConnectivity {
     var service: String { get set }
     
     func setup(withDelegate: DataSyncDelegate, needsPairing: Bool, withCompletionHandler: @escaping(Bool) -> ())
-    func connect(forUser: User, fromViewController: UIViewController?)
-    func sendInvitationForPairing(toPeer: PeerDevice)
+    func connect(forUser: User)
+    func sendInvitationForPairing(to: String)
 }
 
 extension PeerNearByConnectivity {

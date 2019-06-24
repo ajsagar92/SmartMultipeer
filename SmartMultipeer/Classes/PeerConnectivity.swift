@@ -14,7 +14,7 @@ open class PeerConnectivity: NSObject, PeerNearByConnectivity {
     
     public static let instance = PeerConnectivity()
     
-    var connectionTimeOut = 10.0
+    var connectionTimeOut = 60.0
     
     //Advertising with No Invitation
     fileprivate var serviceAdvertiser: MCNearbyServiceAdvertiser?
@@ -30,7 +30,7 @@ open class PeerConnectivity: NSObject, PeerNearByConnectivity {
     
     fileprivate var nearbyPeers: [PeerDevice]
     
-    fileprivate let session: MCSession
+    fileprivate var session: MCSession
     
     fileprivate var needsPairing: Bool = false
     
@@ -40,9 +40,6 @@ open class PeerConnectivity: NSObject, PeerNearByConnectivity {
     public var service: String = ""
     
     private override init() {
-        
-//        availablePeers = []
-//        connectedPeers = []
         nearbyPeers = []
         peer = PeerDevice()
         session = MCSession(peer: peer.deviceID, securityIdentity: nil, encryptionPreference: .required)
@@ -84,42 +81,45 @@ open class PeerConnectivity: NSObject, PeerNearByConnectivity {
     }
     
     //MARK: Conneting Both User One after other
-    public func connect(forUser: User, fromViewController: UIViewController? = nil) {
+    public func connect(forUser: User) {
         switch forUser {
             case .Host:
-                scanning(fromViewController: fromViewController)
+                scanning()
             
             case .Peer:
                 start()
         }
-        
     }
     
     //MARK: Auto Connect for Both Users Simultaneously
-    public func autoConnect(fromViewController: UIViewController? = nil) {
-        connect(forUser: .Host, fromViewController: fromViewController)
-        connect(forUser: .Peer, fromViewController: fromViewController)
-    }
-    
-    public func disconnect(_ forUser: User? = nil) {
-        guard let user = forUser else {
-            serviceAdvertiser?.stopAdvertisingPeer()
-            serviceBrowser?.stopBrowsingForPeers()
-            nearbyPeers.removeAll()
-//            connectedPeers.removeAll()
-//            availablePeers.removeAll()
-            return
-        }
-        switch user {
-            case .Peer:
-                start(false)
-            default:
-            break
-            
+    public func autoConnect() {
+        if !isConnected {
+            self.connect(forUser: .Host)
+            self.connect(forUser: .Peer)
         }
     }
     
-    public func sendInvitationForPairing(toPeer: PeerDevice) {
+    //MARK: Re-initialize Session
+    public func reinitializeSession() {
+        session = MCSession(peer: peer.deviceID, securityIdentity: nil, encryptionPreference: .required)
+        session.delegate = self
+    }
+    
+    //MARK: Disconnect
+    public func disconnect() {
+        session.disconnect()
+        serviceAdvertiser?.stopAdvertisingPeer()
+        serviceBrowser?.stopBrowsingForPeers()
+//        nearbyPeers = nearbyPeers.map { (peer: PeerDevice) -> PeerDevice in
+//            peer.state = .notConnected
+//            return peer
+//        }
+        nearbyPeers = []
+        self.delegate?.update(devices: [], at: Date())
+    }
+    
+    public func sendInvitationForPairing(to: String) {
+        let toPeer = PeerDevice(displayName: to, uuid: nil)
         guard needsPairing, let peerToPaired = getAvailablePeers().filter({ (peer: PeerDevice) -> Bool in
             toPeer.deviceID.displayName == peer.deviceID.displayName
         }).first else {
@@ -128,10 +128,45 @@ open class PeerConnectivity: NSObject, PeerNearByConnectivity {
         serviceBrowser?.invitePeer(peerToPaired.deviceID, to: session, withContext: nil, timeout: connectionTimeOut)
     }
     
+    public func unPair() {
+        let connectedPeers = getConnectedPeers().map { (peer) -> String in
+            return peer.deviceID.displayName
+        }
+        for device in connectedPeers {
+            print("\(device) Pairing \(RealmHelper.instance.set(device: device, isPaired: false))")
+        }
+        send(data: false, ofType: .Unpair, withID: peer.deviceID.displayName)
+        
+    }
+    
+    public func isConnected(device: String) -> Bool {
+        return getConnectedPeers().contains(where: { (peer) -> Bool in
+            return peer.deviceID.displayName == device
+        })
+    }
+    
     //MARK: Send Data with Type
     public func send(data: Any, ofType: Type, withID: Any, to: PeerDevice? = nil) {
-        
         switch ofType {
+            case .Unpair:
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0, execute: {
+                    do {
+                        let container = Container(data: data, ofType: ofType, forDataID: self.peer.deviceID.displayName)
+                        guard let convertedData = Data.toData(object: container) else {
+                            print("Data Not Converted \(data)")
+                            return
+                        }
+                        try self.session.send(convertedData, toPeers: self.session.connectedPeers, with: .reliable)
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                            PeerConnectivity.instance.disconnect()
+                            self.delegate?.update(devices: [], at: Date())
+                        }
+                    }
+                    catch let error {
+                        print(error.localizedDescription)
+                    }
+                })
+            
             case .Acknowledge:
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.0, execute: {
                     guard let devices = data as? [PeerDevice], devices.count > 0 else {
@@ -173,7 +208,6 @@ open class PeerConnectivity: NSObject, PeerNearByConnectivity {
                     }
                 }
         }
-        
     }
     
     //MARK: Peer
@@ -181,6 +215,7 @@ open class PeerConnectivity: NSObject, PeerNearByConnectivity {
         let availablePeers = nearbyPeers.filter { (peer: PeerDevice) -> Bool in
             peer.state == .connecting
         }
+        print("Available Peers: \(availablePeers.count)")
         return availablePeers
     }
     
@@ -188,17 +223,26 @@ open class PeerConnectivity: NSObject, PeerNearByConnectivity {
         let connectedPeers = nearbyPeers.filter { (peer: PeerDevice) -> Bool in
             peer.state == .connected
         }
-//        let connectedPeers = session.connectedPeers.map {
-//            PeerDevice(withID: $0.displayName, state: .connected, udid: nil) }
+        print("Connected Peers: \(connectedPeers.count)")
+        print("Session Connected Peers: \(session.connectedPeers.count)")
         return connectedPeers
     }
     
-    public func getHistoryDisconnectedPeers() -> [PeerDevice] {
-        let historyDevices = Set<PeerDevice>(PeerConnectivity.instance.getAllRegisteredDevices())
+    public func getHistoryDisconnectedPeers(isIncludePairedOnly: Bool = false) -> [PeerDevice] {
+        let historyDevices = Set<PeerDevice>(PeerConnectivity.instance.getAllRegisteredDevices(isIncludePairedOnly: isIncludePairedOnly))
         let connectedDevices = Set<PeerDevice>(PeerConnectivity.instance.getConnectedPeers())
         let availableDevices = Set<PeerDevice>(PeerConnectivity.instance.getAvailablePeers())
 
-        return Array((historyDevices.symmetricDifference(connectedDevices)).symmetricDifference(availableDevices))
+        let disconnectDevices = historyDevices.symmetricDifference(connectedDevices)
+        var devices = Array(disconnectDevices)
+        if !isIncludePairedOnly {
+            devices = Array(disconnectDevices.symmetricDifference(availableDevices))
+        }
+        print("Disconnected Devices: \(devices.count)")
+        return devices.map({ (peer: PeerDevice) -> PeerDevice in
+            peer.state = .notConnected
+            return peer
+        })
     }
     
     public func getCurrentDisconnectPeers() -> [PeerDevice] {
@@ -209,8 +253,8 @@ open class PeerConnectivity: NSObject, PeerNearByConnectivity {
     }
     
     //MARK: Realm
-    public func getAllRegisteredDevices() -> [PeerDevice] {
-        return RealmHelper.instance.getDevicesHistory()
+    public func getAllRegisteredDevices(isIncludePairedOnly: Bool = false) -> [PeerDevice] {
+        return RealmHelper.instance.getDevicesHistory(isIncludePaired: isIncludePairedOnly)
     }
     
     //MARK: Helper Methods
@@ -223,7 +267,7 @@ open class PeerConnectivity: NSObject, PeerNearByConnectivity {
         }
     }
     
-    fileprivate func scanning(fromViewController: UIViewController?) {
+    fileprivate func scanning() {
         serviceBrowser?.startBrowsingForPeers()
     }
 }
@@ -236,6 +280,11 @@ extension PeerConnectivity: MCSessionDelegate {
             case .connected:
                 nearbyPeers.filter { $0.deviceID.displayName == peerID.displayName }.first?.state = .connected
                 print("Connected \(peerID.displayName).")
+                if needsPairing {
+                    DispatchQueue.main.async {
+                        print("\(peerID.displayName) Pairing \(RealmHelper.instance.set(device: peerID.displayName, isPaired: true))")
+                    }
+                }
             
             case .connecting:
                 print("Connecting \(peerID.displayName)..")
@@ -243,7 +292,7 @@ extension PeerConnectivity: MCSessionDelegate {
             
             case .notConnected:
                 nearbyPeers.filter { $0.deviceID.displayName == peerID.displayName }.first?.state = .notConnected
-                self.delegate?.lost(device: PeerDevice(withID: peerID.displayName, state: .notConnected, udid: nil), at: Date())
+                self.delegate?.disconnect(device: PeerDevice(withID: peerID.displayName, state: .notConnected, udid: nil), at: Date())
             
         }
         
@@ -260,6 +309,13 @@ extension PeerConnectivity: MCSessionDelegate {
         
         DispatchQueue.main.async {
             switch container.type {
+                case .Unpair:
+                    DispatchQueue.main.async {
+                        print("Un-Pair from: \(peerID.displayName)")
+                        print("\(peerID.displayName) UnPairing \(RealmHelper.instance.set(device: peerID.displayName, isPaired: false))")
+                        self.delegate?.unpair(from: PeerDevice(withID: peerID.displayName, state: .notConnected, udid: nil), at: Date())
+                    }
+                
                 case .Acknowledge:
                     DispatchQueue.main.async {
                         print("Acknowledgment from: \(peerID.displayName) for data: \(container.id)")
@@ -322,14 +378,22 @@ extension PeerConnectivity: MCNearbyServiceBrowserDelegate {
             peer.deviceID.displayName == peerID.displayName
         })
         if !isPeerInList {
+            print("Now Appending Peer from FoundPeer")
             nearbyPeers.append(foundPeer)
         }
-        nearbyPeers.filter { $0.deviceID.displayName == peerID.displayName }.first?.state = .connecting
+        let connectedPeer = session.connectedPeers.filter({ (connectedPeer) -> Bool in
+            return connectedPeer.displayName == foundPeer.deviceID.displayName
+        }).first
+        if connectedPeer == nil {
+            nearbyPeers.filter { $0.deviceID.displayName == peerID.displayName }.first?.state = .connecting
+        }
         
-        if !needsPairing {
+        if !needsPairing || RealmHelper.instance.getIsPaired(deviceName: peerID.displayName) {
             browser.invitePeer(peerID, to: session, withContext: nil, timeout: connectionTimeOut)
         }
+        print("Pairing of \(peerID.displayName) is \(RealmHelper.instance.getIsPaired(deviceName: peerID.displayName))")
         self.delegate?.update(devices: self.nearbyPeers, at: Date())
+        self.delegate?.found(device: PeerDevice(withPeer: peerID, state: .connecting, udid: nil), at: Date())
         
         guard !(RealmHelper.instance.getDevicesHistory().contains { $0.deviceID.displayName == foundPeer.deviceID.displayName }) else {
             return

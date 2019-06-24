@@ -41,12 +41,17 @@ class RealmHelper: NSObject {
         }
     }
     
-    func getDevicesHistory() -> [PeerDevice] {
+    func getDevicesHistory(isIncludePaired: Bool = false) -> [PeerDevice] {
         guard let realm = realmDB else {
             print("Unable to Initialize Realm")
             return []
         }
-        let peers = Array(realm.objects(RealmPeer.self).sorted(byKeyPath: "displayName", ascending: true))
+        var peers = Array(realm.objects(RealmPeer.self).sorted(byKeyPath: "displayName", ascending: true))
+        if isIncludePaired {
+            peers = peers.filter { (peer: RealmPeer) -> Bool in
+                peer.isPaired == isIncludePaired
+            }
+        }
         
         var devices = [PeerDevice]()
         for peer in peers {
@@ -55,6 +60,38 @@ class RealmHelper: NSObject {
         return devices
     }
     
+    func set(device: String, isPaired: Bool) -> Bool {
+        guard let realm = realmDB else {
+            print("Unable to Initialize Realm")
+            return false
+        }
+        
+        guard let peer = realm.objects(RealmPeer.self).filter("displayName == %@", device).first else {
+            return false
+        }
+        
+        do {
+            try realm.write {
+                peer.isPaired = isPaired
+            }
+            return true
+        }
+        catch {
+            return false
+        }
+    }
     
+    func getIsPaired(deviceName: String) -> Bool {
+        guard let realm = realmDB else {
+            print("Unable to Initialize Realm")
+            return false
+        }
+        
+        guard let peer = realm.objects(RealmPeer.self).filter("displayName == %@", deviceName).first else {
+            return false
+        }
+        
+        return peer.isPaired
+    }
     
 }

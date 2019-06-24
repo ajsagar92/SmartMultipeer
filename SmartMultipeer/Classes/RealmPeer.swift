@@ -15,5 +15,5 @@ class RealmPeer: Object {
     @objc dynamic var state: Int = 0
     @objc dynamic var uuid: String?
     @objc dynamic var connectionTime: Date?
-    
+    @objc dynamic var isPaired: Bool = false
 }

@@ -14,8 +14,12 @@ public enum Type: UInt32 {
     case String
     case Image
     case Dictionary
+    case Array
     case Custom
+    case CustomArray
+    
     case Disconnect
+    case Unpair
     case Acknowledge
     
     static func getType(type: Type) -> UInt32 {
